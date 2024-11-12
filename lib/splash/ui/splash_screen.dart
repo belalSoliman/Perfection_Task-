@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:perfection_company/home/ui/home_screen.dart';
+import 'package:perfection_company/home/ui/user_list_screen.dart';
 import 'package:perfection_company/splash/ui/widget/fade_routes.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen>
       const Duration(seconds: 3),
       () {
         Navigator.of(context).pushReplacement(
-          FadeRoute(page: const HomeScreen()), // Use FadeRoute here
+          FadeRoute(page: const UserListScreen()), // Use FadeRoute here
         );
       },
     );
