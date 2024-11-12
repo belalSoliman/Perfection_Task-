@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:perfection_company/core/services/fetch_user_details_service.dart';
 import 'package:perfection_company/home/model/user_model.dart';
+import 'package:perfection_company/home/widget/user_item.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'user_details_screen.dart';
 
 class UserListScreen extends StatefulWidget {
@@ -23,6 +25,7 @@ class UserListScreenState extends State<UserListScreen> {
   }
 
   Future<void> _fetchUsers() async {
+    if (_isLoading) return; // Prevent multiple fetch calls
     setState(() {
       _isLoading = true;
     });
@@ -36,6 +39,7 @@ class UserListScreenState extends State<UserListScreen> {
       }
     } catch (e) {
       // Handle error
+      print("Error fetching users: $e");
     } finally {
       if (mounted) {
         setState(() {
@@ -48,38 +52,45 @@ class UserListScreenState extends State<UserListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _isLoading && _users.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: _users.length + 1,
-              itemBuilder: (context, index) {
-                if (index == _users.length) {
-                  return _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : ElevatedButton(
-                          onPressed: _fetchUsers,
-                          child: const Text('Load More'),
-                        );
-                }
-                User user = _users[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: NetworkImage(user.avatar),
-                  ),
-                  title: Text(user.name),
-                  subtitle: Text(user.email),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            UserDetailsScreen(userId: user.id),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+      body: ListView.builder(
+        itemCount: _isLoading && _users.isEmpty ? 6 : _users.length + 1,
+        itemBuilder: (context, index) {
+          if (_isLoading && _users.isEmpty) {
+            return Skeletonizer(
+              child: UserCard(
+                user: User(
+                  id: 0,
+                  name: 'Loading...',
+                  email: 'loading@example.com',
+                  avatar: '', // Empty or placeholder avatar
+                ),
+              ),
+            );
+          }
+
+          if (index == _users.length) {
+            return _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                    onPressed: _fetchUsers,
+                    child: const Text('Load More'),
+                  );
+          }
+
+          User user = _users[index];
+          return UserCard(
+            user: user,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UserDetailsScreen(userId: user.id),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
